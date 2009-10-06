@@ -1,0 +1,40 @@
+
+        Liby (Lisp In RubY)
+
+        Oct. 5, 2009 Travis Whitton <tinymountain at gmail dot com>
+
+Liby is a simple Lisp interpreter written in Ruby. It's heavily derived from
+slisp which was written by Sandro Sigala. Liby implements a good number of
+constructs seen in typical Lisp systems and may be useful for learning the
+basis of the Lisp language.
+
+[Requirements]
+Everything required to run Liby should be included in your standard Ruby
+install.
+
+[How to install]
+1. su to root
+2. ruby setup.rb
+
+to install in an alternate location
+3. ruby setup.rb all --prefix=/some/other/location
+
+[Usage]
+See lib/Builtin.rb for intrinsic functions. A library containing additional
+functionality has been included in test/lisp/lisp.lsp. Liby uses dynamic
+scoping in the same fashion as McCarthy's original Lisp did. Don't expect
+to see macros anytime soon. See liby --help for command-line usage.
+
+[Testing]
+A test suite has been included in test/lisp/testsuite.lsp. All the assertions
+pass successfully. This isn't to say Liby is 100% bug free. I'm saving the
+special bugs for you to find.
+
+[Copying]
+BSD Licensed. See LICENSE.txt.
+
+[WARRANTY]
+THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.

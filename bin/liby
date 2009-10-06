@@ -1,0 +1,140 @@
+#!/usr/bin/env ruby
+
+# package components
+require 'liby/lexer'
+require 'liby/parser'
+require 'liby/builtin'
+require 'liby/objectmanager'
+require 'liby/error'
+
+# command-line parsing
+require 'optparse'
+
+# program version
+$version = "0.1.0"
+
+def get_command_line
+  options = {}
+  OptionParser.new do |opts|
+    opts.banner = "Usage #{$0} [options]"
+
+    # logs processed input and output to the screen
+    opts.on("-v", "--verbose", "Verbose output") do |arg|
+      options[:verbose] = arg
+    end
+
+    opts.on("-V", "--version", "Prints version and exits") do |arg|
+      puts "#{$0} version #{$version}"
+      exit
+    end
+
+    # interactive repl
+    opts.on("-r", "--repl", "Run interactively") do |arg|
+      options[:repl] = arg
+    end
+
+    # lint mode
+    opts.on("-l", "--lint", "Display code warnings") do |arg|
+      options[:lint] = arg
+    end
+
+    # exhaustive debug dump
+    opts.on("-d", "--debug", "Runs interpreter in debug mode") do |arg|
+      options[:debug] = arg
+    end
+
+    opts.on_tail("-h", "--help", "Show this message") do
+      puts opts
+      exit
+    end
+  end.parse!
+  return options
+end
+
+# command-line options
+$options = get_command_line()
+
+def process_input(input_file)
+  debug       = $options.has_key?(:debug) ? true : false
+  opt_verbose = $options.has_key?(:verbose) ? true : false
+  opt_lint    = $options.has_key?(:lint) ? true : false
+
+  if debug
+    Error.activate_debug()
+  end
+
+  onatty = input_file == $stdin and input_file.tty?
+  lexer  = Lexer.new(input_file)
+  stack  = ObjectManager.new
+  parser = Parser.new(stack, input_file)
+  stdlib = Builtin.new(stack, opt_lint)
+
+  stack.init_objects
+
+  loop do
+    if onatty
+      print "#{stack.used_objs}/#{stack.free_objs} >> "
+      $stdout.flush
+    end
+
+    if (p = parser.parse_object(0)).nil?
+      break
+    end
+
+    if opt_verbose
+      print "<<= "
+      stdlib.princ_object($stdout, p)
+      print "\n"
+    end
+
+    p1 = stdlib._eval(p)
+
+    if onatty or opt_verbose
+      print "==> "
+      stdlib.princ_object($stdout, p1)
+      printf "\n"
+    end
+
+    if debug
+      Error.warn(":: objects before collection")
+      stack.print_obj_lists()
+    end
+    
+    stack.garbage_collect
+
+    if debug
+      Error.warn(":: objects after collection")
+      stack.print_obj_lists()
+    end
+  end
+end
+
+def process_file(filename)
+  if filename and filename != "-"
+    begin
+      input_file = File.new(filename, "r")
+    rescue
+      Error.error(1, "%s", filename)
+    end
+  else
+    input_file = $stdin
+  end
+  
+  process_input(input_file)
+
+  if input_file != $stdin
+    input_file.close
+  end
+end
+
+def main()
+  if ARGV.length.zero? or $options.has_key?(:repl)
+    process_file(nil)
+  else
+    ARGV.each do |file|
+      process_file(file)
+    end
+  end
+end
+
+main()
