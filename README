@@ -20,7 +20,7 @@ to install in an alternate location
 3. ruby setup.rb all --prefix=/some/other/location
 
 [Usage]
-See lib/Builtin.rb for intrinsic functions. A library containing additional
+See lib/builtin.rb for intrinsic functions. A library containing additional
 functionality has been included in test/lisp/lisp.lsp. Liby uses dynamic
 scoping in the same fashion as McCarthy's original Lisp did. Don't expect
 to see macros anytime soon. See liby --help for command-line usage.
